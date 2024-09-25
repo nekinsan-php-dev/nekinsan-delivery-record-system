@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\RecordController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -14,4 +16,14 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::resource('order/create',OrderController::class)->names([
+        'create' => 'order.create',   
+        'index' => 'order.index',
+        'store' => 'order.store',
+        'show' => 'order.show',
+        'edit' => 'order.edit',
+        'update' => 'order.update',
+        'destroy' => 'order.destroy',
+    ]);
 });
