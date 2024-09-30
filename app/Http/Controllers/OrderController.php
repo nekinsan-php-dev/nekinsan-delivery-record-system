@@ -2,16 +2,44 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\OrdersExport;
+use App\Models\Barcode;
+use App\Models\Order;
+use App\Services\FilterOrders;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class OrderController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected FilterOrders $filterOrders;
+
+    public function __construct(FilterOrders $filterOrders)
     {
-        return view('order.allrecords');
+        $this->filterOrders = $filterOrders;
+    }
+
+    public function index(Request $request)
+    {
+        $orders = Order::query();
+
+        // Apply filters using FilterOrders action
+        $orders = $this->filterOrders->filter($request, $orders);
+
+        // Handle per-page selection, default to 10
+        $perPage = $request->perPage ?? 10;
+        $orders = $orders->latest()->paginate($perPage);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'ordersHtml' => view('order.orders-list', compact('orders'))->render(),
+                'paginationHtml' => view('order.pagination', compact('orders'))->render(),
+                'hasMorePages' => $orders->hasMorePages(),
+                'currentPage' => $orders->currentPage(),
+                'lastPage' => $orders->lastPage(),
+            ]);
+        }
+
+        return view('order.index', ['orders' => $orders]);
     }
 
     /**
@@ -19,7 +47,7 @@ class OrderController extends Controller
      */
     public function create()
     {
-        return view('order.index');
+        return view('order.allrecords');
     }
 
     /**
@@ -60,5 +88,83 @@ class OrderController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function export(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        return Excel::download(new OrdersExport($startDate, $endDate), 'orders.xlsx');
+    }
+
+    public function assignBarcode(Request $request)
+    {
+        $request->validate([
+            'orderIds' => 'required|exists:orders,id',
+        ]);
+
+        // Fetch the orders that need barcodes
+        $orders = Order::whereIn('id', $request->orderIds)->get();
+
+        // Fetch available barcodes
+        $barcodes = Barcode::where('isAssigned', 0)->limit(count($orders))->get();
+
+        // Ensure we have enough barcodes
+        if ($barcodes->count() < $orders->count()) {
+            return response()->json([
+                'message' => 'Not enough barcodes available',
+            ], 400);
+        }
+
+        // Loop through orders and assign each a unique barcode
+        foreach ($orders as $index => $order) {
+            $barcode = $barcodes[$index];  // Get a unique barcode for each order
+
+            // Update the order with the assigned barcode
+            $order->update([
+                'barcode' => $barcode->barcode,
+                'status' => 'dispatched',
+            ]);
+
+            // Mark the barcode as assigned
+            $barcode->update([
+                'isAssigned' => 1,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Barcodes assigned successfully',
+        ]);
+    }
+
+
+    public function invoice($id)
+    {
+        $orders = Order::where('id', $id)->get();
+        return view('order.invoice', compact('orders'));
+    }
+
+    public function invoiceMultiple(Request $request)
+    {
+        $request->validate([
+            'orderIds' => 'required|array',
+            'orderIds.*' => 'exists:orders,id',
+        ]);
+
+        $orders = Order::whereIn('id', $request->orderIds)->get();
+
+        return view('order.invoice', compact('orders'));
+    }
+
+    public function markDelivered(Order $order)
+    {
+        $order->update(['status' => 'delivered']);
+        return response()->json(['success' => true]);
     }
 }

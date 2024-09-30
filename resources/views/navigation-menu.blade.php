@@ -17,8 +17,8 @@
                     </x-nav-link>
                 </div>
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('order.create') }}" :active="request()->routeIs('order.create')">
-                       Add New Record
+                    <x-nav-link href="{{ route('orders.index') }}" :active="request()->routeIs('order.*')">
+                      Orders
                     </x-nav-link>
                 </div>
             </div>

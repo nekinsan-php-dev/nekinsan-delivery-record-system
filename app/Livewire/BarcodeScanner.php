@@ -27,7 +27,9 @@ class BarcodeScanner extends Component
     {
         $this->validate();
 
-        $existingBarcode = Barcode::where('barcode', $this->newBarcode)->first();
+        
+        $existingBarcode = Barcode::with('order')->where('barcode', $this->newBarcode)->first();
+
 
         if ($existingBarcode) {
             $this->handleExistingBarcode($existingBarcode);
@@ -94,11 +96,20 @@ class BarcodeScanner extends Component
         if ($daysSinceLastScan == 0) {
             $this->dispatch('show-error', 'Cannot update. Barcode was scanned today.');
         } else {
-            $this->existingBarcode->update([
-                'status' => 'RTO',
+            $updateData = [
+                'status' => 'rto',
                 'scanned_at' => Carbon::now(),
                 'rto_remark' => $this->rtoRemark,
-            ]);
+            ];
+
+            $this->existingBarcode->update($updateData);
+
+            if ($this->existingBarcode->order) 
+            {
+                unset($updateData['scanned_at']);
+                $this->existingBarcode->order->update($updateData);
+            }
+
             $this->dispatch('show-success', 'Barcode updated to RTO status successfully.');
         }
 

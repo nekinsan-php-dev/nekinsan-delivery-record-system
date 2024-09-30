@@ -9,5 +9,10 @@ class Barcode extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['barcode', 'scanned_at','status','rto_remark'];
+    protected $fillable = ['barcode', 'scanned_at','status','rto_remark','isAssigned'];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class,'barcode','barcode');
+    }
 }

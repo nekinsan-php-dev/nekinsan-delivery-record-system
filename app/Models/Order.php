@@ -17,6 +17,7 @@ class Order extends Model
         'address',
         'pincode',
         'product',
+        'amount',
         'barcode',
         'status',
     ];
