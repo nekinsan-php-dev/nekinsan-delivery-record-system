@@ -2,59 +2,57 @@
 
 namespace App\Exports;
 
-use App\Models\Order;
-use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\FromCollection;
 
-class OrdersExport implements FromQuery, WithHeadings, WithMapping
+class OrdersExport implements  FromCollection, WithHeadings, WithMapping
 {
     use Exportable;
 
-    protected $startDate;
-    protected $endDate;
+    protected $orders;
+    protected $serialNumber = 1;
 
-    public function __construct($startDate, $endDate)
+
+    public function __construct($orders)
     {
-        $this->startDate = $startDate;
-        $this->endDate = $endDate;
+        $this->orders = $orders;
     }
 
-    public function query()
+    public function collection()
     {
-        return Order::query()
-            ->whereBetween('created_at', [$this->startDate, $this->endDate]);
+        return $this->orders;
     }
 
     public function headings(): array
     {
         return [
-            'Product',
-            'Amount',
+            'S.No',   
             'Barcode',
-            'Name',
-            'Mobile',
-            'State',
+            'Ref',
             'City',
-            'Address',
             'Pincode',
-            'Cod'
+            'Name',
+            'Address',
+            'Mobile',
+            'Date',
+            'Cod',
         ];
     }
 
     public function map($order): array
     {
         return [
-            $order->product,
-            $order->amount,
+            $this->serialNumber++,    
             $order->barcode,
-            $order->name,
-            $order->mobile,
-            $order->state,
+            $order->product,
             $order->city,
-            $order->address,
             $order->pincode,
+            $order->name,
+            $order->address,
+            $order->mobile,
+            $order->created_at->format('d-m-Y'),
             $order->amount,
         ];
     }

@@ -92,15 +92,27 @@ class OrderController extends Controller
 
     public function export(Request $request)
     {
-        $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-        ]);
-
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
+        $status = $request->input('status', 'all');
 
-        return Excel::download(new OrdersExport($startDate, $endDate), 'orders.xlsx');
+        $query = Order::query();
+
+        if ($startDate && !$endDate) {
+            $query->whereDate('created_at', '>=', $startDate);
+        } elseif ($startDate && $endDate) {
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        $orders = $query->get();
+
+        $currentDate = now()->format('d-m-Y');
+
+        return Excel::download(new OrdersExport($orders), $currentDate . '-orders.xlsx');
     }
 
     public function assignBarcode(Request $request)
@@ -130,6 +142,8 @@ class OrderController extends Controller
             $order->update([
                 'barcode' => $barcode->barcode,
                 'status' => 'dispatched',
+                'scanned_at' => now(),
+                'assigned_by' => auth()->user()->id,
             ]);
 
             // Mark the barcode as assigned

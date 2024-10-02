@@ -33,6 +33,9 @@ class OrderIndex extends Component
     {
         $validatedData = $this->validate();
 
+        $validatedData['created_by'] = auth()->user()->id;
+        $validatedData['update_by'] = auth()->user()->id;
+
         Order::create($validatedData);
 
         $this->reset(['name', 'mobile', 'city', 'state', 'address', 'pincode', 'product','amount']);

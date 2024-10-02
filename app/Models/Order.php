@@ -11,6 +11,7 @@ class Order extends Model
 
     protected $fillable = [
         'name',
+        'scanned_at',
         'mobile',
         'city',
         'state',
@@ -20,5 +21,6 @@ class Order extends Model
         'amount',
         'barcode',
         'status',
+        'update_by',
     ];
 }

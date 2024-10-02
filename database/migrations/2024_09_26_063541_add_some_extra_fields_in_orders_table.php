@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             $table->string('scanned_at')->nullable()->after('barcode');
             $table->string('rto_remark')->nullable()->after('amount');
+            $table->foreignId('assigned_by')->nullable()->constrained('users')->after('rto_remark');
+            $table->foreignId('created_by')->constrained('users')->after('update_by');
         });
     }
 
