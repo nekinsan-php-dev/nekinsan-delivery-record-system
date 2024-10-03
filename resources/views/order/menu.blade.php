@@ -37,7 +37,7 @@
             <div>
                 <label for="status" class="block text-sm font-medium text-gray-700">Order Status</label>
                 <select id="status" name="status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                    <option value="all">All Statuses</option>
+                    <option value="">All Statuses</option>
                     <option value="booked">Booked</option>
                     <option value="dispatched">Dispatched</option>
                     <option value="delivered">Delivered</option>

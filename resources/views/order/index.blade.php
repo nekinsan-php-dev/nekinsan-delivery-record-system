@@ -132,347 +132,83 @@
 
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <script>
-            const selectAllCheckbox = document.getElementById('selectAllRecords');
-            const assignButton = document.getElementById('assignButton');
-            const printInvoiceButton = document.getElementById('printInvoiceButton');
-            const selectedCountSpan = document.getElementById('selectedCount');
-            const statusSelect = document.getElementById('status');
-            let selectedOrderIds = [];
-            let selectedOrdersWithoutBarcode = [];
-            let selectedOrdersWithBarcode = [];
+            $(document).ready(function() {
+                const selectAllRecords = $('#selectAllRecords');
+                function fetchOrders(page = 1) {
+                    const searchQuery = $('#searchInput').val();
+                    const perPage = $('#perPage').val();
+                    const status = $('#status').val();
 
-            function updateActionButtons() {
-                const hasSelectedWithoutBarcode = selectedOrdersWithoutBarcode.length > 0;
-                const hasSelectedWithBarcode = selectedOrdersWithBarcode.length > 0;
-
-                assignButton.classList.toggle('hidden', !hasSelectedWithoutBarcode);
-                printInvoiceButton.classList.toggle('hidden', !hasSelectedWithBarcode);
-
-                selectedCountSpan.textContent = selectedOrderIds.length;
-
-                // Update button text with counts
-                assignButton.textContent = `Assign Barcode Number (${selectedOrdersWithoutBarcode.length})`;
-                printInvoiceButton.textContent = `Generate & Print Invoice (${selectedOrdersWithBarcode.length})`;
-
-                // Display error messages if needed
-                if (hasSelectedWithBarcode && assignButton.classList.contains('hidden')) {
-                    showErrorMessage('Some selected orders already have barcodes and cannot be assigned again.');
-                }
-                if (hasSelectedWithoutBarcode && printInvoiceButton.classList.contains('hidden')) {
-                    showErrorMessage('Some selected orders do not have barcodes and cannot be printed.');
-                }
-            }
-
-            function showErrorMessage(message) {
-                const errorDiv = document.createElement('div');
-                errorDiv.textContent = message;
-                errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-2';
-                document.querySelector('.mt-4.flex').appendChild(errorDiv);
-                setTimeout(() => errorDiv.remove(), 5000); // Remove after 5 seconds
-            }
-
-            selectAllCheckbox.addEventListener('change', function() {
-                const allCheckboxes = document.querySelectorAll('.selectRecord');
-                const isChecked = this.checked;
-
-                selectedOrderIds = [];
-                selectedOrdersWithoutBarcode = [];
-                selectedOrdersWithBarcode = [];
-
-                allCheckboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                    if (isChecked) {
-                        const orderId = checkbox.value;
-                        selectedOrderIds.push(orderId);
-                        if (checkbox.dataset.hasBarcode === 'false') {
-                            selectedOrdersWithoutBarcode.push(orderId);
-                        } else {
-                            selectedOrdersWithBarcode.push(orderId);
-                        }
-                    }
-                });
-
-                updateActionButtons();
-            });
-
-            document.addEventListener('change', function(e) {
-                if (e.target.classList.contains('selectRecord')) {
-                    const orderId = e.target.value;
-                    const hasBarcode = e.target.dataset.hasBarcode === 'true';
-
-                    if (e.target.checked) {
-                        if (!selectedOrderIds.includes(orderId)) {
-                            selectedOrderIds.push(orderId);
-                            if (hasBarcode) {
-                                selectedOrdersWithBarcode.push(orderId);
-                            } else {
-                                selectedOrdersWithoutBarcode.push(orderId);
-                            }
-                        }
-                    } else {
-                        selectedOrderIds = selectedOrderIds.filter(id => id !== orderId);
-                        if (hasBarcode) {
-                            selectedOrdersWithBarcode = selectedOrdersWithBarcode.filter(id => id !== orderId);
-                        } else {
-                            selectedOrdersWithoutBarcode = selectedOrdersWithoutBarcode.filter(id => id !== orderId);
-                        }
-                    }
-
-                    const allCheckboxes = document.querySelectorAll('.selectRecord');
-                    const allChecked = [...allCheckboxes].every(checkbox => checkbox.checked);
-                    selectAllCheckbox.checked = allChecked;
-
-                    updateActionButtons();
-                }
-            });
-
-
-            // Function to fetch orders with existing filters and date range
-            function fetchOrders(page = 1) {
-                const searchQuery = searchInput.value;
-                const perPage = perPageSelect.value;
-                const startDate = startDateInput.value;
-                const endDate = endDateInput.value;
-                const status = statusSelect.value;
-
-                $.ajax({
-                    url: `{{ route('orders.index') }}?page=${page}`,
-                    method: 'GET',
-                    data: {
-                        search: searchQuery,
-                        perPage: perPage,
-                        start_date: startDate, // Add start date to request
-                        end_date: endDate, // Add end date to request
-                        status: status,
-                    },
-                    success: function(response) {
-                        $('#ordersTableBody').html(response.ordersHtml);
-                        $('#pagination').html(response.paginationHtml);
-                    },
-                    error: function(error) {
-                        console.error('Error fetching orders:', error);
-                    }
-                });
-            }
-
-
-            assignButton.addEventListener('click', function() {
-                if (selectedOrdersWithoutBarcode.length > 0) {
-                    // Existing AJAX call to assign barcodes
                     $.ajax({
-                        url: '{{ route('order.assign.barcode') }}',
-                        method: 'POST',
+                        url: '{{ route('orders.index') }}',
                         data: {
-                            orderIds: selectedOrdersWithoutBarcode,
-                            _token: '{{ csrf_token() }}',
+                            search: searchQuery,
+                            perPage: perPage,
+                            status: status,
                         },
-                        success: function() {
-                            alert('Barcodes assigned successfully!');
-                            // Reset selections and refresh the table
-                            resetSelections();
-                            fetchOrders(1);
+                        success: function(response) {
+                            $('#ordersTableBody').html(response.ordersHtml);
+                            $('#pagination').html(response.paginationHtml);
                         },
-                        error: function(error) {
-                            console.error('Error assigning barcodes:', error);
-                            alert('Failed to assign barcodes.');
+                        error: function() {
+                            alert('Error fetching orders');
                         }
                     });
                 }
-            });
 
-            printInvoiceButton.addEventListener('click', function() {
-                if (selectedOrdersWithBarcode.length > 0) {
-                    // Existing code to print invoices
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{{ route('orders.invoice-multiple') }}';
-                    form.target = '_blank';
+                fetchOrders(1);
 
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = '_token';
-                    csrfInput.value = '{{ csrf_token() }}';
-                    form.appendChild(csrfInput);
-
-                    selectedOrdersWithBarcode.forEach(orderId => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'orderIds[]';
-                        input.value = orderId;
-                        form.appendChild(input);
-                    });
-
-                    document.body.appendChild(form);
-                    form.submit();
-                    document.body.removeChild(form);
-                }
-            });
-
-            function resetSelections() {
-                selectedOrderIds = [];
-                selectedOrdersWithoutBarcode = [];
-                selectedOrdersWithBarcode = [];
-                document.querySelectorAll('.selectRecord').forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-                selectAllCheckbox.checked = false;
-                updateActionButtons();
-            }
-            document.addEventListener('DOMContentLoaded', function() {
-                const selectAllCheckbox = document.getElementById('selectAllRecords');
-                const assignButton = document.getElementById('assignButton');
-                const printInvoiceButton = document.getElementById('printInvoiceButton');
-                const selectedCountSpan = document.getElementById('selectedCount');
-                const searchInput = document.getElementById('searchInput');
-                const perPageSelect = document.getElementById('perPage');
-                const startDateInput = document.getElementById('start_date');
-                const endDateInput = document.getElementById('end_date');
-                let selectedOrderIds = [];
-
-
-                // Barcode assignment logic
-                assignButton.addEventListener('click', function() {
-                    if (selectedOrderIds.length > 0) {
-                        $.ajax({
-                            url: '{{ route('order.assign.barcode') }}',
-                            method: 'POST',
-                            data: {
-                                orderIds: selectedOrderIds,
-                                _token: '{{ csrf_token() }}',
-                            },
-                            success: function() {
-                                alert('Barcodes assigned successfully!');
-                                selectedOrderIds = [];
-                                document.querySelectorAll('.selectRecord').forEach(checkbox => {
-                                    checkbox.checked = false;
-                                });
-                                selectAllCheckbox.checked = false;
-                                updateActionButtons();
-                                fetchOrders(1);
-                            },
-                            error: function(error) {
-                                console.error('Error assigning barcodes:', error);
-                                alert(error.responseJSON.message || 'Failed to assign barcodes.');
-                            }
-                        });
-                    }
-                });
-
-
-                // Apply debounce for search
-                let debounceTimeout;
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(debounceTimeout);
-                    debounceTimeout = setTimeout(() => {
-                        fetchOrders(1);
-                    }, 300); // Adjust debounce delay as needed
-                });
-
-                // Handle per-page selection
-                perPageSelect.addEventListener('change', function() {
+                $('#searchInput').on('input', function() {
                     fetchOrders(1);
                 });
 
-                // Handle "Select All" functionality
-                selectAllCheckbox.addEventListener('change', function() {
-                    const allCheckboxes = document.querySelectorAll('.selectRecord');
-                    const isChecked = this.checked;
-
-                    selectedOrderIds = [];
-                    allCheckboxes.forEach(checkbox => {
-                        checkbox.checked = isChecked;
-                        if (isChecked) {
-                            selectedOrderIds.push(checkbox.value);
-                        }
-                    });
-
-                    updateActionButtons();
+                $('#perPage').on('change', function() {
+                    fetchOrders(1);
                 });
 
-                // Individual checkbox selection logic
-                document.addEventListener('change', function(e) {
-                    if (e.target.classList.contains('selectRecord')) {
-                        const orderId = e.target.value;
-
-                        if (e.target.checked) {
-                            if (!selectedOrderIds.includes(orderId)) {
-                                selectedOrderIds.push(orderId);
-                            }
-                        } else {
-                            selectedOrderIds = selectedOrderIds.filter(id => id !== orderId);
-                        }
-
-                        const allCheckboxes = document.querySelectorAll('.selectRecord');
-                        const allChecked = [...allCheckboxes].every(checkbox => checkbox.checked);
-                        selectAllCheckbox.checked = allChecked;
-
-                        updateActionButtons();
-                    }
+                $('#status').on('change', function() {
+                    fetchOrders(1);
                 });
 
-                // Update buttons based on selected items
-                function updateActionButtons() {
-                    const hasSelectedWithoutBarcode = selectedOrderIds.some(orderId => {
-                        const checkbox = document.querySelector(`input[value="${orderId}"]`);
-                        return checkbox && checkbox.dataset.hasBarcode === 'false';
+                selectAllRecords.on('change', function() {
+                    const isChecked = $(this).is(':checked');
+                    $('#ordersTableBody tr').each(function() {
+                        const checkbox = $(this).find('td:first-child input[type="checkbox"]');
+                        if (checkbox.data('has-barcode') === false) {
+                            checkbox.prop('checked', isChecked);
+                        }
                     });
+                    updateAssignButtonVisibility();
+                    updateSelectedCount();
+                });
 
-                    assignButton.classList.toggle('hidden', !hasSelectedWithoutBarcode);
-                    printInvoiceButton.classList.toggle('hidden', selectedOrderIds.length === 0);
-                    selectedCountSpan.textContent = selectedOrderIds.length;
+                function updateSelectedCount() {
+                    const selectedCount = $('#ordersTableBody input[type="checkbox"]:checked').filter(function() {
+                        return $(this).data('has-barcode') === false;
+                    }).length;
+                    $('#selectedCount').text(selectedCount);
                 }
 
-
-
-                // Print invoice logic
-                printInvoiceButton.addEventListener('click', function() {
-                    if (selectedOrderIds.length > 0) {
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = '{{ route('orders.invoice-multiple') }}';
-                        form.target = '_blank';
-
-                        const csrfInput = document.createElement('input');
-                        csrfInput.type = 'hidden';
-                        csrfInput.name = '_token';
-                        csrfInput.value = '{{ csrf_token() }}';
-                        form.appendChild(csrfInput);
-
-                        selectedOrderIds.forEach(orderId => {
-                            const input = document.createElement('input');
-                            input.type = 'hidden';
-                            input.name = 'orderIds[]';
-                            input.value = orderId;
-                            form.appendChild(input);
-                        });
-
-                        document.body.appendChild(form);
-                        form.submit();
-                        document.body.removeChild(form);
-                    }
-                });
-
-                // Handle the date range picker and apply filter
-                const dateRangePicker = flatpickr("#dateRange", {
-                    mode: "range",
-                    dateFormat: "Y-m-d",
-                    onChange: function(selectedDates, dateStr, instance) {
-                        if (selectedDates.length === 2) {
-                            startDateInput.value = selectedDates[0].toISOString().split('T')[0];
-                            endDateInput.value = selectedDates[1].toISOString().split('T')[0];
-                        }
-                    }
-                });
-
-                document.getElementById('applyFilter').addEventListener('click', function() {
-                    const startDate = startDateInput.value;
-                    const endDate = endDateInput.value;
-                    if (startDate && endDate) {
-                        fetchOrders(1); // Trigger fetch with date range
+                function updateAssignButtonVisibility() {
+                    const selectedCount = $('#ordersTableBody input[type="checkbox"]:checked').filter(function() {
+                        return $(this).data('has-barcode') === false;
+                    }).length;
+                    if (selectedCount > 0) {
+                        $('#assignButton').removeClass('hidden');
                     } else {
-                        alert('Please select a date range');
+                        $('#assignButton').addClass('hidden');
                     }
+                }
+
+                // Add event listener for individual checkboxes
+                $(document).on('change', '#ordersTableBody input[type="checkbox"]', function() {
+                    updateAssignButtonVisibility();
+                    updateSelectedCount();
                 });
+
+                // Initial call to set correct state
+                updateAssignButtonVisibility();
+                updateSelectedCount();
             });
         </script>
 

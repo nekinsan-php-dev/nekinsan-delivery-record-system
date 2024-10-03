@@ -33,7 +33,7 @@ class FilterOrders
             $query->where('city', 'like', '%' . $request->city . '%');
         }
 
-        if ($request->has('status')) {
+        if ($request->has('status') && $request->status != '' && $request->status != 'all') {
             $query->where('status', $request->status);
         }
 
