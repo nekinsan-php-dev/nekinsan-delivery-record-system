@@ -178,6 +178,11 @@
                         success: function(response) {
                             $('#ordersTableBody').html(response.ordersHtml);
                             $('#pagination').html(response.paginationHtml);
+                            
+                            // Update URL with the current page
+                            const url = new URL(window.location);
+                            url.searchParams.set('page', page);
+                            window.history.pushState({}, '', url);
                         },
                         error: function() {
                             alert('Error fetching orders');
@@ -185,7 +190,17 @@
                     });
                 }
 
-                fetchOrders(1);
+                // Add event delegation for pagination links
+                $(document).on('click', '.pagination-link', function(e) {
+                    e.preventDefault();
+                    const page = $(this).data('page');
+                    fetchOrders(page);
+                });
+
+                // Initial fetch with the current page from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const initialPage = urlParams.get('page') || 1;
+                fetchOrders(initialPage);
 
                 $('#searchInput').on('input', function() {
                     fetchOrders(1);
