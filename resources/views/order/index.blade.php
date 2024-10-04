@@ -292,6 +292,8 @@
                     $('.barcodeAssigningProgressBar .bg-blue-600').text(Math.round(percentage) + '%');
                     $('.barcodeAssigningProgressBar .progress-text').text(message);
                 }
+
+              
             });
         </script>
 
