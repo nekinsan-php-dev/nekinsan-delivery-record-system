@@ -176,11 +176,12 @@ class OrderController extends Controller
     public function invoiceMultiple(Request $request)
     {
         $request->validate([
-            'orderIds' => 'required|array',
-            'orderIds.*' => 'exists:orders,id',
+            'orderIds' => 'required|json',
         ]);
 
-        $orders = Order::whereIn('id', $request->orderIds)->get();
+        $orderIds = json_decode($request->orderIds, true);
+        
+        $orders = Order::whereIn('id', $orderIds)->get();
 
         return view('order.invoice', compact('orders'));
     }

@@ -21,10 +21,14 @@
                             class="hidden bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
                             Assign Barcode Number (<span id="selectedCount">0</span>)
                         </button>
-                        <button id="printInvoiceButton"
-                            class="hidden bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
-                            Generate & Print Invoice (<span id="selectedInvoiceCount">0</span>)
-                        </button>
+                        <form id="invoiceForm" action="{{ route('orders.invoice-multiple') }}" method="POST" target="_blank">
+                            @csrf
+                            <input type="hidden" name="orderIds" id="invoiceOrderIds">
+                            <button id="printInvoiceButton" type="submit"
+                                class="hidden bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
+                                Generate & Print Invoice (<span id="selectedInvoiceCount">0</span>)
+                            </button>
+                        </form>
                     </div>
 
                     <div class="mt-2 mb-2">
@@ -184,9 +188,15 @@
                     }).length;
                     const selectedWithBarcode = $('#ordersTableBody input[type="checkbox"]:checked').filter(function() {
                         return $(this).data('has-barcode') === true;
-                    }).length;
+                    });
                     $('#selectedCount').text(selectedWithoutBarcode);
-                    $('#selectedInvoiceCount').text(selectedWithBarcode);
+                    $('#selectedInvoiceCount').text(selectedWithBarcode.length);
+
+                    // Update hidden field with selected order IDs
+                    const selectedOrderIds = selectedWithBarcode.map(function() {
+                        return $(this).val();
+                    }).get();
+                    $('#invoiceOrderIds').val(JSON.stringify(selectedOrderIds));
                 }
 
                 function updateButtonVisibility() {
