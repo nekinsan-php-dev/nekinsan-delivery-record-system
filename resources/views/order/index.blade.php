@@ -136,10 +136,30 @@
         <script>
             $(document).ready(function() {
                 const selectAllRecords = $('#selectAllRecords');
+
+                // Initialize Flatpickr for date range
+                flatpickr("#dateRange", {
+                    mode: "range",
+                    dateFormat: "Y-m-d",
+                    onClose: function(selectedDates, dateStr, instance) {
+                        if (selectedDates.length === 2) {
+                            $('#start_date').val(formatDate(selectedDates[0]));
+                            $('#end_date').val(formatDate(selectedDates[1]));
+                            fetchOrders(1);
+                        }
+                    }
+                });
+
+                function formatDate(date) {
+                    return date.toISOString().split('T')[0];
+                }
+
                 function fetchOrders(page = 1) {
                     const searchQuery = $('#searchInput').val();
                     const perPage = $('#perPage').val();
                     const status = $('#status').val();
+                    const startDate = $('#start_date').val();
+                    const endDate = $('#end_date').val();
 
                     $.ajax({
                         url: '/orders',
@@ -147,6 +167,9 @@
                             search: searchQuery,
                             perPage: perPage,
                             status: status,
+                            start_date: startDate,
+                            end_date: endDate,
+                            page: page
                         },
                         success: function(response) {
                             $('#ordersTableBody').html(response.ordersHtml);
@@ -293,7 +316,30 @@
                     $('.barcodeAssigningProgressBar .progress-text').text(message);
                 }
 
-              
+                // Add this function to handle marking an order as delivered
+                window.markDelivered = function(orderId) {
+                    if (confirm('Are you sure you want to mark this order as delivered?')) {
+                        $.ajax({
+                            url: `/orders/${orderId}/mark-delivered`,
+                            method: 'PATCH',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    alert('Order marked as delivered successfully');
+                                    fetchOrders(); // Refresh the order list
+                                } else {
+                                    alert('Failed to mark order as delivered');
+                                }
+                            },
+                            error: function() {
+                                alert('An error occurred while marking the order as delivered');
+                            }
+                        });
+                    }
+                };
+
             });
         </script>
 

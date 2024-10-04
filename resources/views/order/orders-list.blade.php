@@ -1,4 +1,3 @@
-
 @forelse ($orders as $order)
     <tr wire:key="{{ $order->id }}" class="hover:bg-gray-50 transition-colors duration-200">
         <td class="px-6 py-4 whitespace-nowrap">
@@ -51,9 +50,9 @@
         {{-- mark delivered  --}}
         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
             <button onclick="markDelivered({{ $order->id }})" data-id="{{ $order->id }}"
-                class="px-4 py-2 rounded-md transition-colors duration-200
+                class="mark-delivered-btn px-4 py-2 rounded-md transition-colors duration-200
                 {{ $order->status === 'booked' ? 'bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-100' : '' }}
-                 {{ $order->status === 'dispatched' ? 'bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-100' : '' }}
+                {{ $order->status === 'dispatched' ? 'bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-100' : '' }}
                 {{ $order->status === 'delivered' ? 'bg-green-500 text-white cursor-not-allowed' : '' }}
                 {{ $order->status === 'rto' ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : '' }}"
                 {{ $order->status === 'delivered' || $order->status === 'rto' ? 'disabled' : '' }}
