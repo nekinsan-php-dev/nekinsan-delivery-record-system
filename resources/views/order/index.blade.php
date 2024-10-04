@@ -14,17 +14,26 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div>
                 <div class="max-w-7xl mx-auto">
-                    @include('order.menu') <!-- Ensure this exists and is correct -->
+                    @include('order.menu') 
 
-                    <div class="mt-4 flex">
+                    <div class="mt-4 flex space-x-4">
                         <button id="assignButton"
                             class="hidden bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
                             Assign Barcode Number (<span id="selectedCount">0</span>)
                         </button>
                         <button id="printInvoiceButton"
                             class="hidden bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
-                            Generate & Print Invoice
+                            Generate & Print Invoice (<span id="selectedInvoiceCount">0</span>)
                         </button>
+                    </div>
+
+                    <div class="mt-2 mb-2">
+                        <div class="barcodeAssigningProgressBar hidden rounded w-full p-2">
+                            <div class="w-full bg-gray-200 rounded-full h-6 dark:bg-gray-700 relative overflow-hidden">
+                                <div class="bg-blue-600 h-full rounded-full text-xs font-medium text-blue-100 text-center p-0.5 leading-none transition-all duration-500 ease-in-out" style="width: 0%">0%</div>
+                            </div>
+                            <div class="progress-text text-sm mt-2">Assigning barcodes...</div>
+                        </div>
                     </div>
 
                     <!-- Datatable -->
@@ -48,17 +57,6 @@
                                         <option value="500">500 per page</option>
                                     </select>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-2 mb-2">
-                            <div class="barcodeAssigningProgressBar hidden rounded w-full p-2">
-                                <div
-                                    class="w-full bg-gray-200 rounded-full h-6 dark:bg-gray-700 relative overflow-hidden">
-                                    <div class="bg-blue-600 h-full rounded-full text-xs font-medium text-blue-100 text-center p-0.5 leading-none transition-all duration-500 ease-in-out"
-                                        style="width: 0%">0%</div>
-                                </div>
-                                <div class="progress-text text-sm mt-2">Assigning barcodes...</div>
                             </div>
                         </div>
 
@@ -174,41 +172,116 @@
                     const isChecked = $(this).is(':checked');
                     $('#ordersTableBody tr').each(function() {
                         const checkbox = $(this).find('td:first-child input[type="checkbox"]');
-                        if (checkbox.data('has-barcode') === false) {
-                            checkbox.prop('checked', isChecked);
-                        }
+                        checkbox.prop('checked', isChecked);
                     });
-                    updateAssignButtonVisibility();
+                    updateButtonVisibility();
                     updateSelectedCount();
                 });
 
                 function updateSelectedCount() {
-                    const selectedCount = $('#ordersTableBody input[type="checkbox"]:checked').filter(function() {
+                    const selectedWithoutBarcode = $('#ordersTableBody input[type="checkbox"]:checked').filter(function() {
                         return $(this).data('has-barcode') === false;
                     }).length;
-                    $('#selectedCount').text(selectedCount);
+                    const selectedWithBarcode = $('#ordersTableBody input[type="checkbox"]:checked').filter(function() {
+                        return $(this).data('has-barcode') === true;
+                    }).length;
+                    $('#selectedCount').text(selectedWithoutBarcode);
+                    $('#selectedInvoiceCount').text(selectedWithBarcode);
                 }
 
-                function updateAssignButtonVisibility() {
-                    const selectedCount = $('#ordersTableBody input[type="checkbox"]:checked').filter(function() {
+                function updateButtonVisibility() {
+                    const selectedWithoutBarcode = $('#ordersTableBody input[type="checkbox"]:checked').filter(function() {
                         return $(this).data('has-barcode') === false;
                     }).length;
-                    if (selectedCount > 0) {
+                    const selectedWithBarcode = $('#ordersTableBody input[type="checkbox"]:checked').filter(function() {
+                        return $(this).data('has-barcode') === true;
+                    }).length;
+
+                    if (selectedWithoutBarcode > 0) {
                         $('#assignButton').removeClass('hidden');
                     } else {
                         $('#assignButton').addClass('hidden');
+                    }
+
+                    if (selectedWithBarcode > 0) {
+                        $('#printInvoiceButton').removeClass('hidden');
+                    } else {
+                        $('#printInvoiceButton').addClass('hidden');
                     }
                 }
 
                 // Add event listener for individual checkboxes
                 $(document).on('change', '#ordersTableBody input[type="checkbox"]', function() {
-                    updateAssignButtonVisibility();
+                    updateButtonVisibility();
                     updateSelectedCount();
                 });
 
                 // Initial call to set correct state
-                updateAssignButtonVisibility();
+                updateButtonVisibility();
                 updateSelectedCount();
+
+                $('#assignButton').on('click', function() {
+                    const selectedOrders = $('#ordersTableBody input[type="checkbox"]:checked').filter(function() {
+                        return $(this).data('has-barcode') === false;
+                    }).map(function() {
+                        return $(this).val();
+                    }).get();
+
+                    if (selectedOrders.length === 0) {
+                        alert('No orders selected for barcode assignment.');
+                        return;
+                    }
+
+                    // Show progress bar
+                    $('.barcodeAssigningProgressBar').removeClass('hidden');
+                    updateProgress(0, 'Starting barcode assignment...');
+
+                    let processedCount = 0;
+                    const totalOrders = selectedOrders.length;
+
+                    function assignBarcodes(orderIds) {
+                        $.ajax({
+                            url: '{{ route('order.assign.barcode') }}',
+                            method: 'POST',
+                            data: {
+                                orderIds: orderIds,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                processedCount += response.processedCount || 0;
+                                const progress = (processedCount / totalOrders) * 100;
+                                updateProgress(progress, `Assigned ${processedCount} of ${totalOrders} barcodes...`);
+
+                                if (processedCount < totalOrders) {
+                                    // If there are more orders to process, call the function again
+                                    assignBarcodes(selectedOrders.slice(processedCount));
+                                } else {
+                                    // All orders processed
+                                    updateProgress(100, 'Barcode assignment completed!');
+                                    setTimeout(() => {
+                                        $('.barcodeAssigningProgressBar').addClass('hidden');
+                                        fetchOrders(); // Refresh the order list
+                                    }, 2000);
+                                }
+                            },
+                            error: function(xhr) {
+                                updateProgress(0, 'Error: ' + xhr.responseJSON.message);
+                                setTimeout(() => {
+                                    $('.barcodeAssigningProgressBar').addClass('hidden');
+                                }, 3000);
+                            }
+                        });
+                    }
+
+                    // Start the barcode assignment process
+                    assignBarcodes(selectedOrders);
+                });
+
+                function updateProgress(percentage, message) {
+                    $('.barcodeAssigningProgressBar .bg-blue-600').css('width', percentage + '%');
+                    $('.barcodeAssigningProgressBar .bg-blue-600').text(Math.round(percentage) + '%');
+                    $('.barcodeAssigningProgressBar .progress-text').text(message);
+                }
             });
         </script>
 

@@ -12,10 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('scanned_at')->nullable()->after('barcode');
-            $table->string('rto_remark')->nullable()->after('amount');
-            $table->foreignId('assigned_by')->nullable()->constrained('users')->after('rto_remark');
-            $table->foreignId('created_by')->constrained('users')->after('update_by');
+            $table->foreignId('update_by')->nullable()->constrained('users')->after('created_by');
         });
     }
 
@@ -25,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn('scanned_at');
+            $table->dropColumn('update_by');
         });
     }
 };

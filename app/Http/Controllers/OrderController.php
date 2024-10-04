@@ -118,11 +118,18 @@ class OrderController extends Controller
     public function assignBarcode(Request $request)
     {
         $request->validate([
-            'orderIds' => 'required|exists:orders,id',
+            'orderIds' => 'required|array',
+            'orderIds.*' => 'exists:orders,id',
         ]);
 
+        $orderIds = $request->orderIds;
+        $batchSize = 10; // Process 10 orders at a time
+        $processedCount = 0;
+
+        $batch = array_slice($orderIds, 0, $batchSize);
+        
         // Fetch the orders that need barcodes
-        $orders = Order::whereIn('id', $request->orderIds)->get();
+        $orders = Order::whereIn('id', $batch)->get();
 
         // Fetch available barcodes
         $barcodes = Barcode::where('isAssigned', 0)->limit(count($orders))->get();
@@ -150,13 +157,15 @@ class OrderController extends Controller
             $barcode->update([
                 'isAssigned' => 1,
             ]);
+
+            $processedCount++;
         }
 
         return response()->json([
-            'message' => 'Barcodes assigned successfully',
+            'message' => 'Barcodes assigned successfully for this batch',
+            'processedCount' => $processedCount,
         ]);
     }
-
 
     public function invoice($id)
     {

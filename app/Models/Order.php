@@ -22,5 +22,6 @@ class Order extends Model
         'barcode',
         'status',
         'update_by',
+        'created_by',
     ];
 }
