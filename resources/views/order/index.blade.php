@@ -142,7 +142,7 @@
                     const status = $('#status').val();
 
                     $.ajax({
-                        url: '{{ route('orders.index') }}',
+                        url: '/orders',
                         data: {
                             search: searchQuery,
                             perPage: perPage,
@@ -251,7 +251,7 @@
 
                     function assignBarcodes(orderIds) {
                         $.ajax({
-                            url: '{{ route('order.assign.barcode') }}',
+                            url: '/orders/assign-bar-code',
                             method: 'POST',
                             data: {
                                 orderIds: orderIds,
