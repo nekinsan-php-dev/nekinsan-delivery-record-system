@@ -37,9 +37,10 @@
         @endif
 
         <!-- Page Content -->
-        <main>
+        <main class="container mx-auto px-4 sm:px-6 lg:px-8 w-full">
             {{ $slot }}
         </main>
+
     </div>
 
     @stack('modals')

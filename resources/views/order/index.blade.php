@@ -11,9 +11,9 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="px-2 sm:px-4 max-w-full mx-auto"> <!-- Modified this line -->
             <div>
-                <div class="max-w-7xl mx-auto">
+                <div class="w-full mx-auto">
                     @include('order.menu') 
 
                     <div class="mt-4 flex space-x-4">
@@ -95,6 +95,10 @@
                                         <th scope="col"
                                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Print Invoice</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Send Tracking Link
+                                        </th>
                                         <th scope="col"
                                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Name</th>
