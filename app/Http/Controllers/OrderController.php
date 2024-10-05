@@ -29,6 +29,7 @@ class OrderController extends Controller
         $perPage = $request->perPage ?? 10;
         $orders = $orders->latest()->paginate($perPage);
 
+        
         if ($request->ajax()) {
             return response()->json([
                 'ordersHtml' => view('order.orders-list', compact('orders'))->render(),

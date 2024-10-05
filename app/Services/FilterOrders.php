@@ -37,16 +37,11 @@ class FilterOrders
             $query->where('status', $request->status);
         }
 
-        if ($request->has('start_date') && $request->has('end_date')) {
+
+        if ($request->has('start_date') && $request->has('end_date') && $request->start_date != '' && $request->end_date != '') {
             $startDate = Carbon::parse($request->start_date)->startOfDay();
             $endDate = Carbon::parse($request->end_date)->endOfDay();
             $query->whereBetween('created_at', [$startDate, $endDate]);
-
-            \Log::info('Date range filter applied', [
-                'start_date' => $startDate->toDateTimeString(),
-                'end_date' => $endDate->toDateTimeString(),
-                'query' => $query->toSql(),
-            ]);
         }
 
         return $query;

@@ -176,6 +176,8 @@
                             page: page
                         },
                         success: function(response) {
+                            console.log(response);
+                            
                             $('#ordersTableBody').html(response.ordersHtml);
                             $('#pagination').html(response.paginationHtml);
                             
