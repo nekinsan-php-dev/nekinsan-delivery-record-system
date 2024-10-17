@@ -15,6 +15,7 @@ class OrderIndex extends Component
     public $pincode;
     public $product;
     public $barcode = "";
+    public $amount = "";
 
     protected $rules = [
         'name' => 'required|string|max:255',
@@ -24,23 +25,28 @@ class OrderIndex extends Component
         'address' => 'required|string|max:255',
         'pincode' => 'required|string|max:10',
         'product' => 'required',
-        'barcode' => 'nullable'
+        'barcode' => 'nullable',
+        'amount' => 'nullable'
     ];
 
     public function saveOrder()
     {
         $validatedData = $this->validate();
 
+        $validatedData['created_by'] = auth()->user()->id;
+        $validatedData['update_by'] = auth()->user()->id;
+
         Order::create($validatedData);
 
-        $this->reset(['name', 'mobile', 'city', 'state', 'address', 'pincode', 'product']);
+        $this->reset(['name', 'mobile', 'city', 'state', 'address', 'pincode', 'product','amount']);
+
+        $this->dispatch('orderAdded');
 
         session()->flash('message', 'Order placed successfully!');
     }
 
     public function render()
     {
-        $recentOrders = Order::latest()->take(5)->get();
-        return view('livewire.order.order-index', ['recentOrders' => $recentOrders]);
+        return view('livewire.order.order-index');
     }
 }

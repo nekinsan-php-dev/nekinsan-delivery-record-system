@@ -11,13 +11,17 @@ class Order extends Model
 
     protected $fillable = [
         'name',
+        'scanned_at',
         'mobile',
         'city',
         'state',
         'address',
         'pincode',
         'product',
+        'amount',
         'barcode',
         'status',
+        'created_by',
+        'update_by',
     ];
 }

@@ -11,13 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('barcodes', function (Blueprint $table) {
-            $table->id();
-            $table->string('barcode');
-            $table->timestamp('scanned_at');
-            $table->string('status');
-            $table->boolean('isAssigned')->default(false);
-            $table->timestamps();
+        Schema::table('orders', function (Blueprint $table) {
+            $table->foreignId('update_by')->nullable()->constrained('users')->after('created_by');
         });
     }
 
@@ -26,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('barcodes');
+        Schema::table('orders', function (Blueprint $table) {
+            $table->dropColumn('update_by');
+        });
     }
 };

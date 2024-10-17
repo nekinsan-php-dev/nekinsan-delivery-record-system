@@ -17,13 +17,13 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 
-    Route::resource('order/create',OrderController::class)->names([
-        'create' => 'order.create',   
-        'index' => 'order.index',
-        'store' => 'order.store',
-        'show' => 'order.show',
-        'edit' => 'order.edit',
-        'update' => 'order.update',
-        'destroy' => 'order.destroy',
-    ]);
+    Route::resource('orders', OrderController::class);
+
+    Route::post('/orders/export', [OrderController::class, 'export'])->name('order.export');
+    Route::post('/order/import', [OrderController::class, 'import'])->name('order.import');
+    Route::post('/orders/assign-bar-code',[OrderController::class,"assignBarcode"])->name('order.assign.barcode');
+    Route::get('orders/invoice/{id}',[OrderController::class,"invoice"])->name('orders.invoice');
+    Route::post('orders/invoice-multiple', [OrderController::class, "invoiceMultiple"])->name('orders.invoice-multiple');
+
+    Route::patch('/orders/{order}/mark-delivered', [OrderController::class, 'markDelivered'])->name('orders.markDelivered');
 });
