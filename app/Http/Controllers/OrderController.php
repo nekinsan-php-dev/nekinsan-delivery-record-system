@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Exports\OrdersExport;
+use App\Imports\OrdersImport;
 use App\Models\Barcode;
 use App\Models\Order;
 use App\Services\FilterOrders;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use Carbon\Carbon;
 
 class OrderController extends Controller
 {
@@ -93,27 +95,28 @@ class OrderController extends Controller
 
     public function export(Request $request)
     {
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-        $status = $request->input('status', 'all');
-
         $query = Order::query();
 
-        if ($startDate && !$endDate) {
-            $query->whereDate('created_at', '>=', $startDate);
-        } elseif ($startDate && $endDate) {
-            $query->whereBetween('created_at', [$startDate, $endDate]);
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        
+        if ($startDate || $endDate) {
+            $query = $query->when($startDate, function ($query) use ($startDate) {
+                $adjustedStartDate = Carbon::parse($startDate)->subDay();
+                return $query->whereDate('created_at', '>=', $adjustedStartDate);
+            })
+            ->when($endDate, function ($query) use ($endDate) {
+                $adjustedEndDate = Carbon::parse($endDate)->addDay();
+                return $query->whereDate('created_at', '<=', $adjustedEndDate);
+            });
         }
-
-        if ($status !== 'all') {
-            $query->where('status', $status);
+        if ($status = $request->input('status')) {
+            $query = $query->where('status', $status);
         }
-
         $orders = $query->get();
-
         $currentDate = now()->format('d-m-Y');
-
-        return Excel::download(new OrdersExport($orders), $currentDate . '-orders.xlsx');
+    
+        return Excel::download(new OrdersExport($orders), "{$currentDate}-orders.xlsx");
     }
 
     public function assignBarcode(Request $request)
@@ -192,4 +195,23 @@ class OrderController extends Controller
         $order->update(['status' => 'delivered']);
         return response()->json(['success' => true]);
     }
+
+
+
+
+    public function import(Request $request)
+    {
+        try {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,xlsx,xls|max:2048',
+        ]);
+            Excel::import(new OrdersImport, $request->file('file'));
+            return back()->with('success', 'Order imported successfully!.');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            return back()->with('error','There was a validation error: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            return back()->with('error','There was an error importing the file: ' . $e->getMessage());
+        }
+    }
+    
 }
