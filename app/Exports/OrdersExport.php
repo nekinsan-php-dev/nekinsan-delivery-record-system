@@ -22,6 +22,7 @@ class OrdersExport implements  FromCollection, WithHeadings, WithMapping
 
     public function collection()
     {
+       
         return $this->orders;
     }
 
@@ -30,14 +31,15 @@ class OrdersExport implements  FromCollection, WithHeadings, WithMapping
         return [
             'S.No',   
             'Barcode',
-            'Ref',
+            'Product',
             'City',
+            'State',
             'Pincode',
             'Name',
             'Address',
             'Mobile',
             'Date',
-            'Cod',
+            'Amount',
         ];
     }
 
@@ -48,6 +50,7 @@ class OrdersExport implements  FromCollection, WithHeadings, WithMapping
             $order->barcode,
             $order->product,
             $order->city,
+            $order->state,
             $order->pincode,
             $order->name,
             $order->address,

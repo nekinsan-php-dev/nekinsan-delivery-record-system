@@ -20,6 +20,7 @@ Route::middleware([
     Route::resource('orders', OrderController::class);
 
     Route::post('/orders/export', [OrderController::class, 'export'])->name('order.export');
+    Route::post('/order/import', [OrderController::class, 'import'])->name('order.import');
     Route::post('/orders/assign-bar-code',[OrderController::class,"assignBarcode"])->name('order.assign.barcode');
     Route::get('orders/invoice/{id}',[OrderController::class,"invoice"])->name('orders.invoice');
     Route::post('orders/invoice-multiple', [OrderController::class, "invoiceMultiple"])->name('orders.invoice-multiple');
