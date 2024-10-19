@@ -31,6 +31,42 @@
             Import
             </button>
         </form>
+        <form action="{{ route('import.deliverd') }}" method="POST" enctype="multipart/form-data" class="flex items-center">
+            @csrf
+            <div class="flex items-center justify-center focus:ring-offset-2 px-4">
+            <label for="deliveredExcel" class="cursor-pointer">
+                <span class="inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-150 ease-in-out">
+                    Upload Delivered
+                </span>
+                <input id="deliveredExcel" type="file" name="deliveredExcel" class="hidden" required>
+            </label>
+            </div>
+
+            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <svg class="-ml-1 mr-2 h-5 w-5 text-white-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 16">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"></path>
+            </svg>
+            Import
+            </button>
+        </form>
+        <form action="{{ route('import.rto') }}" method="POST" enctype="multipart/form-data" class="flex items-center">
+            @csrf
+            <div class="flex items-center justify-center focus:ring-offset-2 px-4">
+            <label for="RTOExcel" class="cursor-pointer">
+                <span class="inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-150 ease-in-out">
+                Upload RTO
+                </span>
+                <input id="RTOExcel" type="file" name="RTOExcel" class="hidden" required>
+            </label>
+            </div>
+
+            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <svg class="-ml-1 mr-2 h-5 w-5 text-white-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 16">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"></path>
+            </svg>
+            Import
+            </button>
+        </form>
     @endif
         <a href="{{ route('orders.create') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
