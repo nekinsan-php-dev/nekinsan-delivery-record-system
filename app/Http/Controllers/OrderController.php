@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Exports\OrdersExport;
 use App\Imports\OrdersImport;
+use App\Imports\DeliveredOrders;
+use App\Imports\RtoOrders;
 use App\Models\Barcode;
 use App\Models\Order;
 use App\Services\FilterOrders;
@@ -31,7 +33,6 @@ class OrderController extends Controller
         $perPage = $request->perPage ?? 10;
         $orders = $orders->latest()->paginate($perPage);
 
-        
         if ($request->ajax()) {
             return response()->json([
                 'ordersHtml' => view('order.orders-list', compact('orders'))->render(),
@@ -41,7 +42,6 @@ class OrderController extends Controller
                 'lastPage' => $orders->lastPage(),
             ]);
         }
-
         return view('order.index', ['orders' => $orders]);
     }
 
@@ -197,15 +197,13 @@ class OrderController extends Controller
     }
 
 
-
-
     public function import(Request $request)
     {
         try {
         $request->validate([
-            'file' => 'required|file|mimes:csv,xlsx,xls|max:2048',
+            'upload_fileExcel' => 'required|file|mimes:csv,xlsx,xls|max:2048',
         ]);
-            Excel::import(new OrdersImport, $request->file('file'));
+            Excel::import(new OrdersImport, $request->file('upload_fileExcel'));
             return back()->with('success', 'Order imported successfully!.');
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             return back()->with('error','There was a validation error: ' . $e->getMessage());
@@ -214,4 +212,38 @@ class OrderController extends Controller
         }
     }
     
+
+
+    public function importDeliverdExcel(Request $request){
+   
+
+        try {
+            $request->validate([
+                'upload_deliveredExcel' => 'required|file|mimes:csv,xlsx,xls|max:2048',
+            ]);
+                Excel::import(new DeliveredOrders, $request->file('upload_deliveredExcel'));
+                return back()->with('success', 'Order Updated successfully!.');
+            } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+                return back()->with('error','There was a validation error: ' . $e->getMessage());
+            } catch (\Exception $e) {
+                return back()->with('error','There was an error importing the file: ' . $e->getMessage());
+            }
+    }
+
+
+    public function importRTOExcel(Request $request){
+     
+
+        try {
+            $request->validate([
+                'upload_rtoExcel' => 'required|file|mimes:csv,xlsx,xls|max:2048',
+            ]);
+                Excel::import(new RtoOrders, $request->file('upload_rtoExcel'));
+                return back()->with('success', 'RTO Updated successfully!.');
+            } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+                return back()->with('error','There was a validation error: ' . $e->getMessage());
+            } catch (\Exception $e) {
+                return back()->with('error','There was an error importing the file: ' . $e->getMessage());
+            }
+    }
 }
