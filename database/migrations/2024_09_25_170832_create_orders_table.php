@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('mobile');
             $table->string('city');
             $table->string('state');
-            $table->string('address');
+            $table->text('address');
             $table->string('pincode');
             $table->string('product')->nullable();
             $table->string('amount')->nullable();
