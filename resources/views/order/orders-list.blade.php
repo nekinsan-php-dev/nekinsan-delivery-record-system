@@ -13,13 +13,13 @@
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
             {{ ($orders->currentPage() - 1) * $orders->perPage() + $loop->iteration }}
         </td>
-        <td class="px-6 py-4 whitespace-nowrap">
+        <td class="px-6 py-4 whitespace-nowrap">    
             <div class="space-y-2">
                 <div class="flex items-center">
                     <span class="text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Dispatched:</span>
                     <span
                         class="ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $order->status === 'dispatched' || $order->status === 'delivered' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
-                        @if ($order->status === 'dispatched' || $order->status === 'delivered' || $order->status === 'RTO')
+                        @if ($order->status === 'dispatched' || $order->status === 'delivered' || $order->status === 'rto')
                             @if ($order->status === 'dispatched')
                                 {{ Carbon::parse($order->scanned_at)->format('d-m-Y') }}
                             @elseif($order->status === 'delivered')

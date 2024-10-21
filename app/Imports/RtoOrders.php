@@ -35,7 +35,7 @@ class RtoOrders implements OnEachRow, WithHeadingRow
         if ($order) {
             $order->rto_at =$formattedDate;
             $order->update_by = $userId;
-            $order->status='RTO';
+            $order->status='rto';
             $order->save();
         } else {
        
