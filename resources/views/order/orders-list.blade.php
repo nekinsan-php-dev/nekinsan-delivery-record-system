@@ -19,11 +19,15 @@
                     <span class="text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Dispatched:</span>
                     <span
                         class="ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $order->status === 'dispatched' || $order->status === 'delivered' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
-                        @if ($order->status === 'dispatched' || $order->status === 'delivered')
-                            @if ($order->scanned_at)
+                        @if ($order->status === 'dispatched' || $order->status === 'delivered' || $order->status === 'RTO')
+                            @if ($order->status === 'dispatched')
                                 {{ Carbon::parse($order->scanned_at)->format('d-m-Y') }}
+                            @elseif($order->status === 'delivered')
+                            {{ Carbon::parse($order->delivered_at)->format('d-m-Y') }}
+                            @elseif($order->status === 'RTO')
+                                {{ Carbon::parse($order->rto_at)->format('d-m-Y') }}
                             @else
-                                Not Dispatched
+                            Not Dispatched
                             @endif
                         @else
                             Not Dispatched

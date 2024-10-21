@@ -201,9 +201,9 @@ class OrderController extends Controller
     {
         try {
         $request->validate([
-            'file' => 'required|file|mimes:csv,xlsx,xls|max:2048',
+            'upload_fileExcel' => 'required|file|mimes:csv,xlsx,xls|max:2048',
         ]);
-            Excel::import(new OrdersImport, $request->file('file'));
+            Excel::import(new OrdersImport, $request->file('upload_fileExcel'));
             return back()->with('success', 'Order imported successfully!.');
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             return back()->with('error','There was a validation error: ' . $e->getMessage());
@@ -219,9 +219,9 @@ class OrderController extends Controller
 
         try {
             $request->validate([
-                'deliveredExcel' => 'required|file|mimes:csv,xlsx,xls|max:2048',
+                'upload_deliveredExcel' => 'required|file|mimes:csv,xlsx,xls|max:2048',
             ]);
-                Excel::import(new DeliveredOrders, $request->file('deliveredExcel'));
+                Excel::import(new DeliveredOrders, $request->file('upload_deliveredExcel'));
                 return back()->with('success', 'Order Updated successfully!.');
             } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
                 return back()->with('error','There was a validation error: ' . $e->getMessage());
@@ -236,9 +236,9 @@ class OrderController extends Controller
 
         try {
             $request->validate([
-                'RTOExcel' => 'required|file|mimes:csv,xlsx,xls|max:2048',
+                'upload_rtoExcel' => 'required|file|mimes:csv,xlsx,xls|max:2048',
             ]);
-                Excel::import(new RtoOrders, $request->file('RTOExcel'));
+                Excel::import(new RtoOrders, $request->file('upload_rtoExcel'));
                 return back()->with('success', 'RTO Updated successfully!.');
             } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
                 return back()->with('error','There was a validation error: ' . $e->getMessage());
