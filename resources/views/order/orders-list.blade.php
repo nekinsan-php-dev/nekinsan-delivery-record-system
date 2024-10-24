@@ -13,7 +13,7 @@
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
             {{ ($orders->currentPage() - 1) * $orders->perPage() + $loop->iteration }}
         </td>
-        <td class="px-6 py-4 whitespace-nowrap">    
+        <td class="px-6 py-4 whitespace-nowrap">
             <div class="space-y-2">
                 <div class="flex items-center">
                     <span class="text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Dispatched:</span>
@@ -55,7 +55,7 @@
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
             <span
-                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
         {{ $order->status === 'delivered' ? 'bg-green-100 text-green-800' : ($order->status === 'rto' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">
                 {{ Str::upper($order->status) }}
             </span>
@@ -63,14 +63,23 @@
         </td>
         {{-- mark delivered  --}}
         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-            <button onclick="markDelivered({{ $order->id }})" data-id="{{ $order->id }}"
-                class="mark-delivered-btn px-4 py-2 rounded-md transition-colors duration-200
+            @if($order->status !== 'rto')
+                <button onclick="markDelivered({{ $order->id }})" data-id="{{ $order->id }}"
+                    class="mark-delivered-btn px-4 py-2 rounded-md transition-colors duration-200
+                    {{ $order->status === 'booked' ? 'bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-100' : '' }}
+                    {{ $order->status === 'dispatched' ? 'bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-100' : '' }}
+                    {{ $order->status === 'delivered' ? 'bg-green-500 text-white cursor-not-allowed' : '' }}"
+                    {{ $order->status === 'delivered' ? 'disabled' : '' }}>
+                    Delivered
+                </button>
+            @endif
+            <button onclick="markRTO({{ $order->id }})" data-id="{{ $order->id }}"
+                class="mark-rto-btn px-4 py-2 rounded-md transition-colors duration-200
                 {{ $order->status === 'booked' ? 'bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-100' : '' }}
                 {{ $order->status === 'dispatched' ? 'bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-100' : '' }}
-                {{ $order->status === 'delivered' ? 'bg-green-500 text-white cursor-not-allowed' : '' }}
-                {{ $order->status === 'rto' ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : '' }}"
-                {{ $order->status === 'delivered' || $order->status === 'rto' ? 'disabled' : '' }}>
-                Delivered
+                {{ $order->status === 'rto' ? 'bg-red-600 text-white cursor-not-allowed' : '' }}"
+                {{ $order->status === 'rto' ? 'disabled' : '' }}>
+                RTO
             </button>
         </td>
         {{-- print invoice  --}}
@@ -81,7 +90,7 @@
         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
             @if($order->barcode)
                 <a href="https://wa.me/91{{ $order->mobile }}?text=नमस्ते%20{{ urlencode($order->name) }}%2C%0A%0Aआपके%20लिए%20*NEKINSAN*%20से%20एक%20ऑर्डर%20है।%20आपका%20ट्रैकिंग%20आईडी%20{{ urlencode($order->barcode) }}%20है।%0A%0Aअधिक%20जानकारी%20के%20लिए%20हमारी%20वेबसाइट%20देखें%3A%20https%3A%2F%2Fnekinsan.com%2F%0A%0Aआप%20इस%20लिंक%20के%20माध्यम%20से%20अपने%20ऑर्डर%20को%20ट्रैक%20कर%20सकते%20हैं%3A%20https%3A%2F%2Fwww.indiapost.gov.in%2F_layouts%2F15%2Fdop.portal.tracking%2Ftrackconsignment.aspx%0A%0Aइस%20लिंक%20को%20खोलें%20और%20अपना%20ट्रैकिंग%20आईडी%20दर्ज%20करके%20अपने%20ऑर्डर%20को%20ट्रैक%20करें।"
-                    target="_blank" 
+                    target="_blank"
                     class="text-indigo-600 hover:text-indigo-900">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="30px" height="30px"
                         class="inline-block align-middle mr-1">

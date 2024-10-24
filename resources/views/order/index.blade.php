@@ -14,7 +14,7 @@
         <div class="px-2 sm:px-4 max-w-full mx-auto"> <!-- Modified this line -->
             <div>
                 <div class="w-full mx-auto">
-                    @include('order.menu') 
+                    @include('order.menu')
 
                     <div class="mt-4 flex space-x-4">
                         <button id="assignButton"
@@ -177,10 +177,10 @@
                         },
                         success: function(response) {
                             console.log(response);
-                            
+
                             $('#ordersTableBody').html(response.ordersHtml);
                             $('#pagination').html(response.paginationHtml);
-                            
+
                             // Update URL with the current page
                             const url = new URL(window.location);
                             url.searchParams.set('page', page);
@@ -356,6 +356,30 @@
                             },
                             error: function() {
                                 alert('An error occurred while marking the order as delivered');
+                            }
+                        });
+                    }
+                };
+
+                // add this function to handle marking an order as rto
+                window.markRTO = function(orderId) {
+                    if (confirm('Are you sure you want to mark this order as RTO?')) {
+                        $.ajax({
+                            url: `/orders/${orderId}/mark-rto`,
+                            method: 'PATCH',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    alert('Order marked as RTO successfully');
+                                    fetchOrders(); // Refresh the order list
+                                } else {
+                                    alert('Failed to mark order as RTO');
+                                }
+                            },
+                            error: function() {
+                                alert('An error occurred while marking the order as RTO');
                             }
                         });
                     }

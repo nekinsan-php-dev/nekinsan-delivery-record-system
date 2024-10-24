@@ -25,10 +25,11 @@ Route::middleware([
     Route::post('/order/import', [OrderController::class, 'import'])->name('order.import');
     Route::post('/import/deliverd', [OrderController::class, 'importDeliverdExcel'])->name('import.deliverd');
     Route::post('/import/rto', [OrderController::class, 'importRTOExcel'])->name('import.rto');
-    
+
     Route::post('/orders/assign-bar-code',[OrderController::class,"assignBarcode"])->name('order.assign.barcode');
     Route::get('orders/invoice/{id}',[OrderController::class,"invoice"])->name('orders.invoice');
     Route::post('orders/invoice-multiple', [OrderController::class, "invoiceMultiple"])->name('orders.invoice-multiple');
 
     Route::patch('/orders/{order}/mark-delivered', [OrderController::class, 'markDelivered'])->name('orders.markDelivered');
+    Route::patch('/orders/{order}/mark-rto', [OrderController::class, 'markRTO'])->name('orders.markRTO');
 });

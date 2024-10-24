@@ -99,7 +99,7 @@ class OrderController extends Controller
 
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
-        
+
         if ($startDate || $endDate) {
             $query = $query->when($startDate, function ($query) use ($startDate) {
                 $adjustedStartDate = Carbon::parse($startDate)->subDay();
@@ -115,7 +115,7 @@ class OrderController extends Controller
         }
         $orders = $query->get();
         $currentDate = now()->format('d-m-Y');
-    
+
         return Excel::download(new OrdersExport($orders), "{$currentDate}-orders.xlsx");
     }
 
@@ -131,7 +131,7 @@ class OrderController extends Controller
         $processedCount = 0;
 
         $batch = array_slice($orderIds, 0, $batchSize);
-        
+
         // Fetch the orders that need barcodes
         $orders = Order::whereIn('id', $batch)->get();
 
@@ -184,7 +184,7 @@ class OrderController extends Controller
         ]);
 
         $orderIds = json_decode($request->orderIds, true);
-        
+
         $orders = Order::whereIn('id', $orderIds)->get();
 
         return view('order.invoice', compact('orders'));
@@ -193,6 +193,12 @@ class OrderController extends Controller
     public function markDelivered(Order $order)
     {
         $order->update(['status' => 'delivered']);
+        return response()->json(['success' => true]);
+    }
+
+    public function markRTO(Order $order)
+    {
+        $order->update(['status' => 'rto']);
         return response()->json(['success' => true]);
     }
 
@@ -211,11 +217,11 @@ class OrderController extends Controller
             return back()->with('error','There was an error importing the file: ' . $e->getMessage());
         }
     }
-    
+
 
 
     public function importDeliverdExcel(Request $request){
-   
+
 
         try {
             $request->validate([
@@ -232,7 +238,7 @@ class OrderController extends Controller
 
 
     public function importRTOExcel(Request $request){
-     
+
 
         try {
             $request->validate([
