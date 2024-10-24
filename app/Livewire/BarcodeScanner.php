@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Barcode;
+use App\Models\Order;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -27,7 +28,7 @@ class BarcodeScanner extends Component
     {
         $this->validate();
 
-        
+
         $existingBarcode = Barcode::with('order')->where('barcode', $this->newBarcode)->first();
 
 
@@ -64,7 +65,7 @@ class BarcodeScanner extends Component
 
     public function render()
     {
-        $query = Barcode::query()->orderBy('created_at', 'desc');
+        $query = Order::query()->orderBy('created_at', 'desc');
 
         if (!empty($this->search)) {
             $barcodeArray = array_filter(array_map('trim', explode(',', $this->search)));
@@ -104,7 +105,7 @@ class BarcodeScanner extends Component
 
             $this->existingBarcode->update($updateData);
 
-            if ($this->existingBarcode->order) 
+            if ($this->existingBarcode->order)
             {
                 unset($updateData['scanned_at']);
                 $this->existingBarcode->order->update($updateData);
@@ -126,5 +127,16 @@ class BarcodeScanner extends Component
         $this->showConfirmation = false;
         $this->existingBarcode = null;
         $this->rtoRemark = '';
+    }
+
+    public function updateOrderStatus($orderId, $status)
+    {
+        $order = Order::find($orderId);
+        if ($order) {
+            $order->update(['status' => $status]);
+            $this->dispatch('show-success', 'Order status updated successfully.');
+        } else {
+            $this->dispatch('show-error', 'Order not found.');
+        }
     }
 }

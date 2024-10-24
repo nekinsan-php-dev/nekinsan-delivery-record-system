@@ -84,7 +84,7 @@
                             </td>
                             <td class="border-b border-gray-200 px-6 py-4">
                                 <span
-                                    class="px-4 py-3 text-xs font-semibold rounded 
+                                    class="px-4 py-3 text-xs font-semibold rounded
                                     {{ $barcode->status === 'delivered'
                                         ? 'bg-green-100 text-green-800'
                                         : ($barcode->status === 'rto'
@@ -94,13 +94,40 @@
                                 </span>
                             </td>
                             <td class="border-b border-gray-200 px-6 py-4">{{ $barcode->rto_remark }}</td>
-                            <td class="border-b border-gray-200 px-6 py-4">
-                                @if ($barcode->status === 'dispatched')
-                                    <button
-                                        class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition ease-in-out duration-150">
-                                        Delivered
-                                    </button>
-                                @endif
+
+                            <td>
+                            @if ($barcode->status === 'booked')
+                                <button
+                                    wire:click="updateOrderStatus('{{ $barcode->id }}', 'delivered')"
+                                    class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition ease-in-out duration-150">
+                                    Mark as Delivered
+                                </button>
+                                <button
+                                    wire:click="updateOrderStatus('{{ $barcode->id }}', 'rto')"
+                                    class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition ease-in-out duration-150">
+                                    Mark as RTO
+                                </button>
+                            @elseif ($barcode->status === 'delivered')
+                                <button
+                                    wire:click="updateOrderStatus('{{ $barcode->id }}', 'delivered')"
+                                    class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition ease-in-out duration-150 cursor-not-allowed"
+                                    disabled>
+                                    Mark as Delivered
+                                </button>
+                            @elseif ($barcode->status === 'rto')
+                                <button
+                                    wire:click="updateOrderStatus('{{ $barcode->id }}', 'delivered')"
+                                    class="px-4 py-2 bg-white text-gray-600 font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition ease-in-out duration-150 cursor-not-allowed"
+                                    disabled>
+                                    Mark as Delivered
+                                </button>
+                                <button
+                                    wire:click="updateOrderStatus('{{ $barcode->id }}', 'rto')"
+                                    class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition ease-in-out duration-150 cursor-not-allowed"
+                                    disabled>
+                                    Mark as RTO
+                                </button>
+                            @endif
                             </td>
 
                         </tr>
@@ -145,7 +172,7 @@
         <div class="fixed inset-0 z-10 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-    
+
                 <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
